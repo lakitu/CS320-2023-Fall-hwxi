@@ -1,8 +1,8 @@
 (* ****** ****** *)
 
-let rec
+let rec 
 fact(x: int): int =
-if x > 0 then fact(x-1) * x  else 1
+if x > 0 then fact(x-1) * x else 1
 ;;
 
 (* ****** ****** *)
