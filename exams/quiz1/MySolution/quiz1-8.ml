@@ -16,31 +16,34 @@
 
 *)
 
-let smallest_starting_from (t: int*int*int*int*int) (i:int): int*int*int*int*int = 
+
+let sort2 (t:int*int*int*int*int):int*int*int*int*int =
   let (a, b, c, d, e) = t in
-  if i <= 0 && a < b && a < c && a < d && a < e 
-    then t
-  else if i <= 1 && b < c && b < d && b < e 
-    then (b, a, c, d, e)
-  else if i <= 2 && c < d && c < e 
-    then (c, b, a, d, e)
-  else if i <= 3 && d < e
-    then (d, b, c, a, e)
-  else (e, b, c, d, a)
+  if b < a then (b, a, c, d, e)
+  else t
 ;;
 
-let sort5: int*int*int*int*int -> int*int*int*int*int =
-  fun p0 -> 
-    let p1 = smallest_starting_from p0 0 in
-    let p2 = smallest_starting_from p1 1 in
-    let p3 = smallest_starting_from p2 2 in
-    let p4 = smallest_starting_from p3 3 in
-    let p5 = smallest_starting_from p4 4 in
-    p5
-  ;;
+let sort3 (t:int*int*int*int*int):int*int*int*int*int =
+  let (a, b, c, d, e) = t in
+  if c < b then sort2 (a, c, b, d, e)
+  else sort2(t)
+;;
+
+let sort4 (t: int*int*int*int*int): int*int*int*int*int =
+  let (a, b, c, d, e) = t in
+  if d < c then sort3(a, b, d, c, e)
+  else sort3(t)
+;;
+
+let sort5(t: int*int*int*int*int): int*int*int*int*int =
+  let (a, b, c, d, e) = t |> sort2 |> sort3 |> sort4 in
+  if e < d then sort4(a, b, c, e, d)
+  else sort4(a, b, c, d, e)
+;;
 
   sort5(1, 2, 1, 1, 2);;
   sort5(1, 3, 4, 5, 2);;
   sort5(1, 3, 5, 4, 2);;
+  sort5(5, 4, 3, 2, 1);;
 
 (* ************************************************ *)
