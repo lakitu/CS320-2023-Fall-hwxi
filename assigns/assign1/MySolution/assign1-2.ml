@@ -1,4 +1,4 @@
-#use "../../classlib/OCaml/MyOCaml.ml";;
+#use "../../../classlib/OCaml/MyOCaml.ml";;
 
 (* let string_merge (cs1: string)(cs2: string) : string =  
   let cs1_head: char = cs1 |> string_head
@@ -39,5 +39,3 @@ let string_merge (cs1: string)(cs2: string) : string =
     )
   )
 ;;
-
-string_merge "abc" "def";;
