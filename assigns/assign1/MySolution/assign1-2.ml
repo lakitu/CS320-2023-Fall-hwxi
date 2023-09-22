@@ -25,7 +25,7 @@ let string_merge (cs1: string)(cs2: string) : string =
           string_merge_recursive(i)(j+1)
         )
         else if j >= string_length(cs2) then (
-          string_get_at(cs1)(i);
+          work(string_get_at(cs1)(i));
           string_merge_recursive(i+1)(j)
         )
         else (
