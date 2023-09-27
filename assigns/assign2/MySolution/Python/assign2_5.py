@@ -9,7 +9,7 @@ from MyPython import *
 # let work(x0) = (res := (x0 :: !res))
 # in (*let*)(fwork(work); list_reverse(!res)); ;
 
-def list_make_fwork (fwork):
+def fnlist_make_fwork (fwork):
     res = []
     fwork(lambda x: res.append(x))
 
@@ -18,5 +18,4 @@ def list_make_fwork (fwork):
         outlist = fnlist_cons(a, outlist)
     return outlist
 
-
-fnlist_print(list_make_fwork(lambda y: int1_foreach(5, y)))
+    

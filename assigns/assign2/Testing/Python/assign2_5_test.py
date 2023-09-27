@@ -6,10 +6,10 @@ import sys
 sys.setrecursionlimit(16000)
 ####################################################
 sys.path.append('./../../MySolution/Python')
-sys.path.append("./../../../../classlib/Python")
-####################################################
-from MyPython import *
 from assign2_5 import *
+######################################################
+sys.path.append("./../../../../classlib/Python")
+from MyPython import *
 ######################################################
 assert(fnlist_make_fwork(lambda work: work(0)).cons1 == 0)
 assert(fnlist_make_fwork(lambda work: work(1)).cons1 == 1)
