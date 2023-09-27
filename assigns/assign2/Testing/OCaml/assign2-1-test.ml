@@ -1,5 +1,6 @@
 (* ****** ****** *)
 #use "./../../MySolution/OCaml/assign2-1.ml";;
+#use "../../assign2-ml";;
 (* ****** ****** *)
 let xs0 = MyNil
 let xs1 = MyCons(1, xs0)
