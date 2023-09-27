@@ -18,4 +18,5 @@ def list_make_fwork (fwork):
         outlist = fnlist_cons(a, outlist)
     return outlist
 
-print(fnlist_print(list_make_fwork(lambda y: int1_foreach(5, y))))
+
+fnlist_print(list_make_fwork(lambda y: int1_foreach(5, y)))

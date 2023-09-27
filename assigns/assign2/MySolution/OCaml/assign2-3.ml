@@ -1,11 +1,9 @@
+#use "../../assign2.ml";;
+
 (*
-//
-Assign2-3: 10 points
-//
 Please implement foldleft_to_iforeach that turns a
 foldleft-loop into a iforeach-loop:
-let
-foldleft_to_iforeach
+let foldleft_to_iforeach
 (foldleft: ('xs, 'x0, int) foldleft): ('xs, 'x0) iforeach = ...
 *)
 
@@ -18,3 +16,6 @@ match xs with
 | (x1 :: xs) ->
   list_foldleft(xs)(fopr(r0)(x1))(fopr)
 ;;
+
+let foldleft_to_iforeach
+(foldleft: ('xs, 'x0, int) foldleft): ('xs, 'x0) iforeach
