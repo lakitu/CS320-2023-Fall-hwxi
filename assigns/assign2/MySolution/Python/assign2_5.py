@@ -10,12 +10,14 @@ from MyPython import *
 # in (*let*)(fwork(work); list_reverse(!res)); ;
 
 def fnlist_make_fwork (fwork):
-    res = []
-    fwork(lambda x: res.append(x))
+    res = list_make_fwork(fwork)
 
     outlist = fnlist_nil()
     for a in reversed(res):
         outlist = fnlist_cons(a, outlist)
     return outlist
 
-    
+def list_make_fwork (fwork):
+    res = []
+    fwork(lambda x: res.append(x))
+    return res
