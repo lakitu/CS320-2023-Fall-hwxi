@@ -24,7 +24,10 @@ let len(list: 'a list): int =
 ;;
 
 let foldleft_to_iforeach
-(foldleft: ('xs, 'x0, ('a * 'b) list) foldleft): ('xs, 'x0) iforeach =
-  fun (xs: 'b list) (work: ('a * 'b) -> unit) -> 
-    let tuple_list = foldleft(xs)([])(fun r0 x0 -> (len(r0), x0) :: r0) in
-    list_rforeach(tuple_list)(work)
+(foldleft: ('xs, 'x0, int) foldleft): 
+('xs, 'x0) iforeach =
+  fun (xs: 'xs) (work: int -> 'x0 -> unit): unit -> 
+    let _ = 
+      foldleft(xs)(0)(fun i xi -> (work(i)(xi); i+1))
+    in ()
+  ;;
