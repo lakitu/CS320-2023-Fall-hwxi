@@ -17,10 +17,10 @@ let ( ) = assert(10 = mylist_get_at(xs7)(5))
 let ( ) = assert(10 = mylist_get_at(xs7)(7))
 ;;
 (* ****** ****** *)
-let ( ) = assert(10 = -mylist_get_at(xs7)(0))
-let ( ) = assert(10 = -mylist_get_at(xs7)(2))
-let ( ) = assert(10 = -mylist_get_at(xs7)(4))
-let ( ) = assert(10 = -mylist_get_at(xs7)(6))
+let ( ) = assert(-10 = mylist_get_at(xs7)(0))
+let ( ) = assert(-10 = mylist_get_at(xs7)(2))
+let ( ) = assert(-10 = mylist_get_at(xs7)(4))
+let ( ) = assert(-10 = mylist_get_at(xs7)(6))
 ;;
 (* ****** ****** *)
 let () = print_string("Assign2-2-test passed!\n");;

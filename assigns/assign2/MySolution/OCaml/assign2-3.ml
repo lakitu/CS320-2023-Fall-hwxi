@@ -1,4 +1,5 @@
 #use "../../assign2.ml";;
+#use "../../../../classlib/ocaml/myocaml.ml"
 
 (*
 Please implement foldleft_to_iforeach that turns a
@@ -7,7 +8,7 @@ let foldleft_to_iforeach
 (foldleft: ('xs, 'x0, int) foldleft): ('xs, 'x0) iforeach = ...
 *)
 
-let rec
+(* let rec
 list_foldleft
 (xs: 'a list)
 (r0: 'r0)(fopr: 'r0 -> 'a -> 'r0): 'r0 =
@@ -15,7 +16,15 @@ match xs with
 | [] -> r0
 | (x1 :: xs) ->
   list_foldleft(xs)(fopr(r0)(x1))(fopr)
+;; *)
+  
+
+let len(list: 'a list): int =
+  list_foldleft(list)(0)(fun r0 x0 -> r0 + 1)
 ;;
 
 let foldleft_to_iforeach
-(foldleft: ('xs, 'x0, int) foldleft): ('xs, 'x0) iforeach
+(foldleft: ('xs, 'x0, ('a * 'b) list) foldleft): ('xs, 'x0) iforeach =
+  fun (xs: 'b list) (work: ('a * 'b) -> unit) -> 
+    let tuple_list = foldleft(xs)([])(fun r0 x0 -> (len(r0), x0) :: r0) in
+    list_rforeach(tuple_list)(work)
