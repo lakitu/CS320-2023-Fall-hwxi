@@ -20,4 +20,14 @@
 # *)
 
 def foreach_to_get_at(foreach): # your implementation below
-
+    def get_at (xs, i0):
+        if i0 >= len(xs) or i0 < 0:
+            raise Subscript
+        info = [0, 0]
+        def work(x0):
+            if info[0] == i0:
+                info[1] = x0
+            info[0] += 1
+        foreach(xs, work)
+        return info[1]
+    return get_at

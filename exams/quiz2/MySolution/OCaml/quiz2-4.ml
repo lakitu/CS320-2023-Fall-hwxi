@@ -11,4 +11,8 @@ is empty, raise the Empty exception
 (* ************************************************ *)
 
 exception Empty
-let list_last(xs: 'a list): 'a = ....
+let list_last(xs: 'a list): 'a = 
+  match xs with
+  | [] -> raise Empty
+  | x0 :: xs -> list_foldleft(xs)(x0)(fun r0 xi -> xi)
+;;
