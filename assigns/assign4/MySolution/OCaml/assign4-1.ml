@@ -1,12 +1,5 @@
 #use "../../../../classlib/OCaml/MyOCaml.ml"
 
-let rec pow a e =
-  match e with
-  | 0 -> 1
-  | 1 -> a
-  | _ -> a * pow(a)(e-1)
-;;
-
 let sign (e:int): float =
   if (e mod 2) = 0 then -1.
   else 1.;;
