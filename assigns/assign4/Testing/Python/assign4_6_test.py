@@ -14,6 +14,8 @@ def cube_sum(ij):
     j = ij[1]
     return i*i*i + j*j*j
 ####################################################
+# theNatPairs_cubesum should return a GENERATOR
+####################################################
 def theNatPairs_count(N):
     res = 0
     for ij in theNatPairs_cubesum():
