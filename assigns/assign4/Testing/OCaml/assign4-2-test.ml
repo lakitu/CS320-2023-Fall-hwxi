@@ -8,22 +8,21 @@ match fxs() with
   | StrNil -> raise Empty
   | StrCons(xy1, fxs) -> (xy1, fxs)
 (* ****** ****** *)
-let
-the_squares_stream =
-let rec
-helper
-(cxs
-:(int*int)strcon)
-(tot: int)(sum: int): int strcon =
-match cxs with
-|
-StrNil -> raise Empty
-|
-StrCons((x, y), fxs) ->
-if
-x + y <= sum
-then (Printf.printf("(x, y) = (%i, %i)\n") (x)(y); helper(fxs())(tot+1)(sum))
-else StrCons(tot, fun() -> helper(cxs)(tot)(sum+1)) in fun() -> helper(theNatPairs())(0)(0)
+let the_squares_stream =
+  let rec helper (cxs: (int*int) strcon)(tot: int)(sum: int): int strcon =
+    match cxs with
+    | StrNil -> raise Empty
+    | StrCons((x, y), fxs) -> (
+      if x + y <= sum
+        then (
+          Printf.printf("(x, y) = (%i, %i), tot = %i\n")(x)(y)(tot+1);
+          helper(fxs())(tot+1)(sum)
+        )
+        else (
+          StrCons(tot, fun() -> helper(cxs)(tot)(sum+1))
+        )
+    )
+  in fun() -> helper(theNatPairs())(0)(0)
 (* ****** ****** *)
 let fxs =
 the_squares_stream
