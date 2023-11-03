@@ -516,4 +516,11 @@ match fxss with
 ;;
 (* ****** ****** *)
 
+let string_constructor(cs: char list): string =
+  string_make_fwork(fun work -> list_foreach cs work)
+;;
+
+let reverse_list(xs: 'a list): 'a list =
+  list_foldleft(xs)([])(fun r0 x0 -> x0 :: r0)
+;;
 (* end of [CS320-2023-Fall-classlib-MyOCaml.ml] *)
