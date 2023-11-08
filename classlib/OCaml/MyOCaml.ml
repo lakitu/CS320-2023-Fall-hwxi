@@ -895,3 +895,12 @@ let string_constructor(cs: char list): string =
 let reverse_list(xs: 'a list): 'a list =
   list_foldleft(xs)([])(fun r0 x0 -> x0 :: r0)
 ;;
+
+let int_to_string(num: int): string =
+  let rec loop(num: int)(acc: char list): string =
+    if num = 0 then string_make_fwork(fun work -> list_foreach(acc)(work))
+    else (
+      let digit = num mod 10 in
+      let chr = char_of_digit(digit) in
+      loop(num/10)(chr :: acc) )
+  in loop(num)([]);

@@ -56,7 +56,6 @@ type sexpr =
   | SInt of int        (* 1, 2, 3, 4 ...  *)
   | SAdd of sexpr list (* (add e1 e2 ...) *)
   | SMul of sexpr list (* (mul e1 e2 ...) *)
-
 (* ****** ****** *)
 
 (* end of [CS320-2023-Fall-assigns-assign6.ml] *)
