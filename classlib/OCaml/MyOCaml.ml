@@ -903,4 +903,12 @@ let int_to_string(num: int): string =
       let digit = num mod 10 in
       let chr = char_of_digit(digit) in
       loop(num/10)(chr :: acc) )
-  in loop(num)([]);
+  in loop(num)([])
+
+let list_tail(xs: 'a list): 'a list =
+  match xs with
+  | x0 :: xs -> xs
+  | [] -> []
+
+let string_remove_tail(str: string): string = 
+  str |> string_listize |> reverse_list |> list_tail |> reverse_list |> string_constructor

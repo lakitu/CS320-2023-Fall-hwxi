@@ -52,7 +52,12 @@ let rec sexpr_parser() =
 ;;
 
 let sexpr_parse s = 
-  string_parse (sexpr_parser()) s
+  match string_parse (sexpr_parser()) s with
+  | Some(e, cs) -> (
+    match cs with
+    | [] -> Some(e)
+    | _ -> None )
+  | None -> None
 ;;
 
 let rec sexpr_to_string (e: sexpr) : string =
@@ -62,14 +67,14 @@ let rec sexpr_to_string (e: sexpr) : string =
     (fun r0 x0 -> 
         r0 ^ (sexpr_to_string x0) ^ " "
     ) in
-    "(add " ^ strlist ^ ")"
+    "(add " ^ string_remove_tail(strlist) ^ ")"
   )
   | SMul selist -> (
     let strlist = list_foldleft(selist)("")
     (fun r0 x0 -> 
         r0 ^ (sexpr_to_string x0) ^ " "
     ) in
-    "(mul " ^ strlist ^ ")"
+    "(mul " ^ string_remove_tail(strlist) ^ ")"
   )
   | SInt num -> int_to_string(num)
     ;;
