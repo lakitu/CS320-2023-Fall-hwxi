@@ -707,194 +707,13 @@ let whitespaces1 =
 let keyword(s: string) =
   (literal s) >> whitespaces >| ()
 
-(* ****** ****** *)
-
-(** open the option and apply the work function to that element **)
-let option_foreach(o0: 'a option)(work: 'a -> unit): unit =
-  match o0 with
-  | Some(a) -> work(a)
-  | None    -> ()
-
-(** open the option and run the test function on each element. If all pass then return true **)
-let option_forall(o0) =
-  foreach_to_forall(option_foreach)(o0)
-
-let option_foldleft(o: 'a option)(acc: 'r0)(fopr: 'r0 -> 'a -> 'r0): 'r0 =
-  foreach_to_foldleft(option_foreach)(o)(acc)(fopr)
-
-let option_listize(xs: 'xs): 'x0 list =
-  foreach_to_listize(option_foreach)(xs)
-
-let option_map(o: 'a option)(fopr: 'a -> 'b): 'b option =
-  match o with
-  | Some(a) -> Some(fopr(a))
-  | None    -> None
-
-let option_bind(o: 'a option)(fopr: 'a -> 'b option): 'b option =
-  option_foldleft(o)(None)(fun _ x -> fopr(x))
-
-let option_cond(c0: bool)(v0: unit -> 'a): 'a option =
-  if c0 then Some(v0()) else None
-
-(* ****** ****** *)
-
-let (let@) = option_bind
-
-(* ****** ****** *)
-
-type 'a parser = char list -> ('a * char list) option
-
-let string_parse(p: 'a parser)(s: string): ('a * char list) option =
-  p(string_listize(s))
-
-let pure(a: 'a) =
-  fun xs -> Some(a, xs)
-
-let fail: 'a parser =
-  fun _ -> None
-
-let bind(p: 'a parser)(q: 'a -> 'b parser) =
-  fun xs ->
-    let@ (a, xs) = p(xs) in
-    q(a)(xs)
-
-let read: char parser =
-  fun xs ->
-  match xs with
-  | x :: xs -> Some (x, xs)
-  | _ -> None
-
-let satisfy(f: char -> bool) =
-  fun xs ->
-  match xs with
-  | x :: xs -> option_cond(f(x))(fun () -> x, xs)
-  | _ -> None
-
-let char(c: char) =
-  satisfy((=) c)
-
-let seqright(p1: 'a parser)(p2: 'b parser) =
-  fun xs ->
-  let@ (_, xs) = p1(xs) in
-  p2 xs
-
-let seqleft(p1 : 'a parser)(p2 : 'b parser) =
-  fun xs ->
-  let@ (x, xs) = p1(xs) in
-  let@ (_, xs) = p2(xs) in
-  Some (x, xs)
-
-let disj(p1 : 'a parser)(p2 : 'a parser) =
-  fun xs ->
-  option_foldleft(p1(xs))(fun () -> p2(xs))(fun _ x () -> Some x)()
-
-let map(p : 'a parser)(f : 'a -> 'b) =
-  fun xs ->
-  option_map(p(xs))(fun (a, xs) -> f(a), xs)
-
-let rec many(p : 'a parser) =
-  fun ls ->
-  match p(ls) with
-  | Some (x, ls) ->
-    (match many(p)(ls) with
-     | Some (xs, ls) -> Some (x :: xs, ls)
-     | None -> Some (x :: [], ls))
-  | None -> Some ([], ls)
-
-let rec many1(p: 'a parser) =
-  fun ls ->
-  match p(ls) with
-  | Some (x, ls) ->
-    (match many(p)(ls) with
-     | Some (xs, ls) -> Some (x :: xs, ls)
-     | None -> Some (x :: [], ls))
-  | None -> None
-
-let rec many'(p: unit -> 'a parser) =
-  fun ls ->
-  match p(())(ls) with
-  | Some (x, ls) ->
-    (match many'(p)(ls) with
-     | Some (xs, ls) -> Some (x :: xs, ls)
-     | None -> Some (x :: [], ls))
-  | None -> Some ([], ls)
-
-let rec many1'(p : unit -> 'a parser) =
-  fun ls ->
-  match p(())(ls) with
-  | Some (x, ls) ->
-    (match many'(p)(ls) with
-     | Some (xs, ls) -> Some (x :: xs, ls)
-     | None -> Some (x :: [], ls))
-  | None -> None
-
-let whitespace =
-  fun xs ->
-  match xs with
-  | c :: xs ->
-    option_cond(char_iswhitespace(c))(fun () -> (), xs)
-  | _ -> None
-
-let digit =
-  satisfy char_isdigit
-
-let natural : int parser =
-  fun ls ->
-  let@ (xs, ls) = many1 digit ls in
-  Some(list_foldleft(xs)(0) (fun acc n -> acc * 10 + digit_of_char(n)), ls)
-
-let literal(s: string) =
-  fun ls ->
-  let cs = string_listize s in
-  let rec loop cs ls =
-    match cs, ls with
-    | [], _ -> Some ((), ls)
-    | c :: cs, x :: xs ->
-      if x = c
-      then loop cs xs
-      else None
-    | _ -> None
-  in loop cs ls
-
-(* ****** ****** *)
-
-let (>>=)  = bind
-let (let*) = bind
-let (>>)   = seqright
-let (<<)   = seqleft
-let (<|>)  = disj
-let (>|=)  = map
-let (>|)   = fun p c -> map p (fun _ -> c)
-
-(* ****** ****** *)
-
-let whitespaces =
-  (many whitespace) >| ()
-
-let whitespaces1 =
-  (many1 whitespace) >| ()
-
-let keyword(s: string) =
-  (literal s) >> whitespaces >| ()
-
-(* ****** ****** *)
-
-let string_constructor(cs: char list): string =
-  string_make_fwork(fun work -> list_foreach cs work)
-;;
-
-let reverse_list(xs: 'a list): 'a list =
-  list_foldleft(xs)([])(fun r0 x0 -> x0 :: r0)
-;;
 (* end of [CS320-2023-Fall-classlib-MyOCaml.ml] *)
 
 let string_constructor(cs: char list): string =
   string_make_fwork(fun work -> list_foreach cs work)
-;;
 
 let reverse_list(xs: 'a list): 'a list =
   list_foldleft(xs)([])(fun r0 x0 -> x0 :: r0)
-;;
 
 let int_to_string(num: int): string =
   let rec loop(num: int)(acc: char list): string =
@@ -903,7 +722,16 @@ let int_to_string(num: int): string =
       let digit = num mod 10 in
       let chr = char_of_digit(digit) in
       loop(num/10)(chr :: acc) )
-  in loop(num)([])
+  in 
+  if num < 0 then "-" ^ loop(-num)([])
+  else loop(num)([])
+
+let boolean_to_string(b: bool): string =
+  match b with
+  | true -> "True"
+  | false -> "False"
+
+let explode(s: string) = string_listize(s)
 
 let list_tail(xs: 'a list): 'a list =
   match xs with
@@ -912,3 +740,12 @@ let list_tail(xs: 'a list): 'a list =
 
 let string_remove_tail(str: string): string = 
   str |> string_listize |> reverse_list |> list_tail |> reverse_list |> string_constructor
+
+let not_char(c: char) = 
+  satisfy(fun c0 -> not ((=) c c0))
+
+let word_until(c: char): string parser =
+  fun xs -> 
+    match many(not_char ';')(xs) with
+    | Some(arr, rest) -> Some(string_constructor arr, rest)
+    | None -> None
