@@ -750,3 +750,13 @@ let word_until(c: char): string parser =
     match many(not_char ';')(xs) with
     | Some(arr, rest) -> Some(string_constructor arr, rest)
     | None -> None
+
+  (* remove blank chars at the front of a list *)
+let rec trim cs =
+  match cs with
+  | [] -> cs
+  | '\n' :: cs -> trim cs
+  | '\t' :: cs -> trim cs
+  | '\r' :: cs -> trim cs
+  | ' ' :: cs -> trim cs
+  | _ -> cs

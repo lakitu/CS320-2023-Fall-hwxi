@@ -146,6 +146,9 @@ let interpret_program(cmds: coms) : string list option =
 
 let interp (s : string) : string list option = 
    match string_parse(coms_parser()) s with
-   | Some(pgm, []) -> interpret_program (Coms pgm)
+   | Some(pgm, remains) -> (
+      match trim remains with
+      | [] -> interpret_program (Coms pgm)
+      | _ -> None  )
    | _ -> None
    
