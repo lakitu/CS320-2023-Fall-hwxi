@@ -723,7 +723,8 @@ let int_to_string(num: int): string =
       let chr = char_of_digit(digit) in
       loop(num/10)(chr :: acc) )
   in 
-  if num < 0 then "-" ^ loop(-num)([])
+  if num = 0 then "0"
+  else if num < 0 then "-" ^ loop(-num)([])
   else loop(num)([])
 
 let boolean_to_string(b: bool): string =

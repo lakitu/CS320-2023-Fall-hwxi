@@ -79,7 +79,7 @@ let interpret_trace(stack: const list)(trace: string list): com_interpreter =
    match stack with
    | cnst :: stack -> 
       (Unit(()) :: stack, const_to_string(cnst) :: trace)
-   | [] -> (stack, "Panic" :: trace)
+   | [] -> ([], "Panic" :: trace)
 
 let interpret_arithmetic(f: int -> int -> int)(stack: const list)(trace: string list): com_interpreter =
    match stack with
@@ -93,17 +93,15 @@ let interpret_div(stack: const list)(trace: string list) =
    try interpret_arithmetic ( / )(stack)(trace) with 
    | Division_by_zero -> ([], "Panic" :: trace)
 
-let interpret_and(stack: const list)(trace: string list): com_interpreter =
+let interpret_bool_op(f: bool -> bool -> bool)
+   (stack: const list)(trace: string list): com_interpreter =
    match stack with
    | Boolean a :: Boolean b :: stack ->
-      (Boolean(a && b) :: stack, trace)
+      (Boolean(f a b) :: stack, trace)
    | _ -> ([], "Panic" :: trace)
 
-let interpret_or(stack: const list)(trace: string list): com_interpreter =
-   match stack with
-   | Boolean a :: Boolean b :: stack ->
-      (Boolean(a || b) :: stack, trace)
-   | _ -> ([], "Panic" :: trace)
+let interpret_and = interpret_bool_op ( && )
+let interpret_or = interpret_bool_op ( || )
 
 let interpret_not(stack: const list)(trace: string list): com_interpreter =
    match stack with
@@ -111,17 +109,15 @@ let interpret_not(stack: const list)(trace: string list): com_interpreter =
       (Boolean(not a) :: stack, trace)
    | _ -> ([], "Panic" :: trace)
 
-let interpret_lt(stack: const list)(trace: string list): com_interpreter =
+let interpret_comp_op(f: int -> int -> bool)
+   (stack: const list)(trace: string list): com_interpreter =
    match stack with
    | Integer i1 :: Integer i2 :: stack ->
-      (Boolean(i1 < i2) :: stack, trace)
+      (Boolean(f i1 i2) :: stack, trace)
    | _ -> ([], "Panic" :: trace)
 
-let interpret_gt(stack: const list)(trace: string list): com_interpreter = 
-   match stack with
-   | Integer i1 :: Integer i2 :: stack ->
-      (Boolean(i1 > i2) :: stack, trace)
-   | _ -> ([], "Panic" :: trace)
+let interpret_lt = interpret_comp_op( < )
+let interpret_gt = interpret_comp_op( > )
 
 let interpret_program(cmds: coms) : string list option =
    let rec loop(cmds: coms)(stack: const list)(trace: string list): string list option =
