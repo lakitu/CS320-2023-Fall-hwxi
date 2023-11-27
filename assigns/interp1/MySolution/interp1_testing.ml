@@ -40,7 +40,6 @@ let prog10 = "
   Push 1; 
   Push True; 
   And; 
-  Trace; 
   Push 2; 
   Push 3; 
   Add; 
@@ -63,3 +62,5 @@ let prog12 = "
   Push 1; Push 2; Push 3; Lt; Trace; Pop; Gt; Trace;
 "
 let () = assert(interp prog12 = Some(["Panic"; "False"]))
+
+let () = print_endline("All tests passed!")
