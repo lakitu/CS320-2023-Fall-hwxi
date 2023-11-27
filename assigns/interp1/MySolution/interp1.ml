@@ -772,8 +772,7 @@ Notes:
 
 *)
 
-type const = 
-            | Integer of int
+type const = Integer of int
             | Boolean of bool
             | Unit of unit
 type com = Push of const | Pop | Trace 
@@ -796,9 +795,10 @@ let const_parser(): const parser =
     pure(Integer(-x))) <|>
    (let* x = natural in
     pure(Integer x)) <|>
-   (let* t = keyword "True" in pure(Boolean true)) <|>
-   (let* f = keyword "False" in pure(Boolean false)) <|>
-   (let* _ = many (not_char ';') in pure(Unit ()))
+   (let* _ = keyword "True" in pure(Boolean true)) <|>
+   (let* _ = keyword "False" in pure(Boolean false)) <|>
+   (let* _ = keyword "Unit" in pure(Unit ())) <|>
+   fail
 
 let rec com_parser(): com parser =
    let* _ = whitespaces in
@@ -822,7 +822,7 @@ let rec com_parser(): com parser =
    fail
 
 let coms_parser()  =
-   many(com_parser())
+   many (com_parser())
 ;;
 
 type com_interpreter = const list * string list
