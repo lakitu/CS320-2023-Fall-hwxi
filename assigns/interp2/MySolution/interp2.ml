@@ -840,19 +840,19 @@ let rec com_parser(): com parser =
    (  let* _ = literal "If" in
       let* _ = whitespaces1 in
       let* coms1 = many (com_parser()) in 
-      let* _ = whitespaces1 in
+      let* _ = whitespaces in
       let* _ = literal "Else" in
       let* _ = whitespaces1 in
       let* coms2 = many (com_parser()) in 
-      let* _ = whitespaces1 in
+      let* _ = whitespaces in
       let* _ = keyword "End;" in 
       pure(IfElse(Coms coms1, Coms coms2))  ) <|>
    (let* _ = keyword "Bind;" in pure(Bind)) <|>
    (let* _ = keyword "Lookup;" in pure(Lookup)) <|>
    (  let* _ = literal "Fun" in
       let* _ = whitespaces1 in
-      let* func = many (com_parser()) in 
-      let* _ = whitespaces1 in 
+      let* func = many (com_parser()) in
+      let* _ = whitespaces in
       let* _ = keyword "End;" in
       pure(Fun (Coms func))  ) <|>
    (let* _ = keyword "Call;" in pure(Call)) <|>
