@@ -892,11 +892,15 @@ let const_to_string(cnst: const) =
    | Boolean b ->  boolean_to_string b
    | Unit(()) -> "Unit"
    | Sym str -> str
+let closure_to_string(c: closure) =
+  let (name, _, _) = c in "Fun<"^name^">"
 let interpret_trace(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
-   match stack with
-   | Const cnst :: stack -> 
-      (Const(Unit ()) :: stack, const_to_string(cnst) :: trace, vars)
-   | _ -> ([], "Panic" :: trace, vars)
+  match stack with
+  | Const cnst :: stack -> 
+    (Const(Unit ()) :: stack, const_to_string(cnst) :: trace, vars)
+  | Closure c :: stack ->
+    (Const(Unit ()) :: stack, closure_to_string(c) :: trace, vars)
+  | _ -> ([], "Panic" :: trace, vars)
 
 let interpret_arithmetic(f: int -> int -> int)(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
    match stack with
