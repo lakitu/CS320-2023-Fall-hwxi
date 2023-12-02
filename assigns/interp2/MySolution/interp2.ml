@@ -820,7 +820,8 @@ let const_parser(): const parser =
 
 let rec com_parser(): com parser =
    let* _ = whitespaces in
-   (  let* _ = keyword "Push" in
+   (  let* _ = literal "Push" in
+      let* _ = whitespaces1 in
       let* v = const_parser() in
       let* _ = char ';' in
       pure(Push v)  ) <|>
@@ -836,18 +837,24 @@ let rec com_parser(): com parser =
    (let* _ = keyword "Not;" in pure(Not)) <|>
    (let* _ = keyword "Lt;" in pure(Lt)) <|>
    (let* _ = keyword "Gt;" in pure(Gt)) <|>
-   (  let* _ = keyword "If" in
-      let* coms1 = many (com_parser()) in let* _ = whitespaces in
-      let* _ = keyword "Else" in
-      let* coms2 = many (com_parser()) in let* _ = whitespaces in
+   (  let* _ = literal "If" in
+      let* _ = whitespaces1 in
+      let* coms1 = many (com_parser()) in 
+      let* _ = whitespaces1 in
+      let* _ = literal "Else" in
+      let* _ = whitespaces1 in
+      let* coms2 = many (com_parser()) in 
+      let* _ = whitespaces1 in
       let* _ = keyword "End;" in 
-      pure(IfElse(Coms coms1, Coms coms2)) ) <|>
+      pure(IfElse(Coms coms1, Coms coms2))  ) <|>
    (let* _ = keyword "Bind;" in pure(Bind)) <|>
    (let* _ = keyword "Lookup;" in pure(Lookup)) <|>
-   (  let* _ = keyword "Fun" in
+   (  let* _ = literal "Fun" in
+      let* _ = whitespaces1 in
       let* func = many (com_parser()) in 
-      let* _ = whitespaces in let* _ = keyword "End;" in
-      pure(Fun (Coms func)) ) <|>
+      let* _ = whitespaces1 in 
+      let* _ = keyword "End;" in
+      pure(Fun (Coms func))  ) <|>
    (let* _ = keyword "Call;" in pure(Call)) <|>
    (let* _ = keyword "Return;" in pure(Return)) <|>
    fail
@@ -864,6 +871,7 @@ and value =
 | Closure of closure
 and closure = string * t_vars * coms
 type com_var_interpreter = t_stack * t_trace * t_vars
+exception UhOh of t_stack
 
 let interpret_push(cnst: const)(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
    (Const cnst :: stack, trace, vars)
@@ -944,10 +952,9 @@ let interpret_lookup(stack: t_stack)(trace: t_trace)
       try (
          let _ = list_foreach vars (fun var -> 
          let (n, v) = var in
-         if n = x then raise (Found v) ) in
+         if n = x then raise (Found v)  ) in
       ([], "Panic" :: trace, vars) ) (*name not in env*)
-      with Found v -> (v :: stack, trace, vars)
-   )
+      with Found v -> (v :: stack, trace, vars)  )
    | _ -> ([], "Panic" :: trace, vars)
 
 let interpret_fun(funComs: coms)
@@ -959,7 +966,6 @@ let interpret_fun(funComs: coms)
       (Closure f :: stack, trace, vars)
    | _ -> ([], "Panic" :: trace, vars)
 
-exception UhOh of t_stack
 let rec interpret_call(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
    match stack with
    | Closure c :: a :: stack -> 
@@ -989,7 +995,7 @@ and interpret_coms(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): co
    let rec loop(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
       match cmds with
       | Coms(cmd :: cmds) -> (
-         let new_stack_trace = 
+         let com_interp = 
             match cmd with
             | Push(cnst) -> interpret_push(cnst)
             | Pop -> interpret_pop
@@ -1010,7 +1016,7 @@ and interpret_coms(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): co
             | Fun(funComs) -> interpret_fun(funComs)
             | Call -> interpret_call
             | Return -> interpret_return
-         in match new_stack_trace stack trace vars with
+         in match com_interp stack trace vars with
          | (stack, "Panic" :: trace, vars) -> (stack, "Panic" :: trace, vars)
          | (stack, trace, vars) -> loop(Coms cmds)(stack)(trace)(vars)  )
       | _ -> (stack, trace, vars)
@@ -1019,7 +1025,8 @@ and interpret_coms(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): co
       
 
 let interpret_program(cmds: coms): t_trace =
-   let (_, trace, _) = interpret_coms(cmds)([])([])([]) in trace
+   let (_, trace, vars) = interpret_coms(cmds)([])([])([]) 
+   in trace
 
 
 let interp (s : string) : t_trace option = 
@@ -1029,3 +1036,4 @@ let interp (s : string) : t_trace option =
       | [] -> Some (interpret_program (Coms pgm))
       | _ -> None  )
    | _ -> None
+;;
