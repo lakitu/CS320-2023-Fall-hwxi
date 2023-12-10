@@ -1,4 +1,5 @@
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
+#use "./../../interp2/MySolution/interp2.ml";;
 
 (*
 
@@ -328,4 +329,138 @@ let parse_prog (s : string) : expr =
   | Some (m, []) -> scope_expr m
   | _ -> raise SyntaxError
 
-let compile (s : string) : string = (* YOUR CODE *)
+let rec translate_prog (e: expr): prog =
+  match e with
+  | Int i -> translate_int i
+  | Bool b -> translate_bool b
+  | Unit -> translate_unit()
+  | UOpr(opr, exp) -> translate_uopr opr exp
+  | BOpr(opr, exp1, exp2) -> translate_bopr opr exp1 exp2
+  | Var str -> translate_var str
+  | Fun(name, arg, body) -> translate_fun name arg body
+  | App(funName, arg) -> translate_app funName arg
+  | Let(name, value, inExpr) -> translate_let name value inExpr
+  | Seq(expr1, expr2) -> translate_seq expr1 expr2
+  | Ifte(cond, ifExpr, elseExpr) -> translate_ifte cond ifExpr elseExpr
+  | Trace(tExpr) -> translate_trace tExpr
+
+and translate_int (i: int): coms =
+  [Push(Integer i)] 
+
+and translate_bool (b: bool): coms =
+  [Push(Boolean b)]
+
+and translate_unit(): coms =
+  [Push(Unit ())]
+
+and translate_uopr(opr: uopr)(expression: expr): prog =
+  let transComsList = translate_prog expression in
+  match opr with
+  | Not -> list_append (transComsList) [Not]
+  | Neg -> list_append (transComsList) [Push(Integer(-1)); Mul]
+
+and translate_bopr(opr: bopr)(expr1: expr)(expr2: expr): coms =
+  let stackComs1 = translate_prog expr1 in
+  let stackComs2 = translate_prog expr2 in
+  match opr with
+  | Add -> list_concat [stackComs2; stackComs1; [Add]]
+  | Sub -> list_concat [stackComs2; stackComs1; [Sub]]
+  | Mul -> list_concat [stackComs2; stackComs1; [Mul]]
+  | Div -> list_concat [stackComs2; stackComs1; [Div]]
+  | Mod -> list_concat [stackComs2; [Push(Sym "e1"); Bind;];
+                stackComs1; [Push(Sym "e2"); Bind;
+                Push(Sym "e2"); Lookup;
+                Push(Sym "e1"); Lookup;
+                Div; Push(Sym "e2"); Lookup; Mul;
+                Push(Sym "e1"); Lookup; Sub;]]
+  | And -> list_concat [stackComs1; stackComs2; [And]]
+  | Or  -> list_concat [stackComs1; stackComs2; [Or] ]
+  | Lt  -> list_concat [stackComs2; stackComs1; [Lt] ]
+  | Gt  -> list_concat [stackComs2; stackComs1; [Gt] ]
+  (* TEST EXTENSIVLEY *)
+  | Lte -> list_concat 
+            [stackComs2; stackComs1; 
+            [Push(Integer 1); Swap; Sub; Lt]]
+  | Gte -> list_concat 
+            [stackComs2; stackComs1;
+            [Push(Integer 1); Add; Gt]]
+  | Eq  -> list_concat 
+            [stackComs1; stackComs2;
+            [Push(Sym "e2"); Bind;
+            Push(Sym "e1"); Bind;
+
+            Push(Sym "e1"); Lookup;
+            Push(Sym "e2"); Lookup; Lt;
+            
+            Push(Sym "e1"); Lookup;
+            Push(Sym "e2"); Lookup; Gt;
+            Or; Not;]]
+
+and translate_var (str: string): coms =
+  [Push (Sym str); Lookup];
+
+and translate_fun (name: string)(argName: string)(funBody: expr) =
+  let funBody = translate_prog funBody
+  |> list_append [Push (Sym argName); Bind] in
+  [Push (Sym name); Fun funBody]
+
+and translate_app (name: expr)(arg: expr) =
+  let transName = translate_prog name in
+  let transArg  = translate_prog arg  in
+  list_concat [transArg; transName; [Call]]
+
+and translate_let (name: string)(varVal: expr)(inVal: expr) =
+  let varComs = translate_prog varVal in
+  let inProg  = translate_prog inVal  in
+  list_concat [varComs; [Push(Sym name); Bind;]; inProg]
+
+and translate_seq (expr1: expr)(expr2: expr) =
+  let coms1 = translate_prog expr1 in
+  let coms2 = translate_prog expr2 in
+  list_append coms2 coms1
+
+and translate_ifte (ifExpr: expr)(thenExpr: expr)(elseExpr: expr) =
+  let ifComs   = translate_prog ifExpr in
+  let thenComs = translate_prog thenExpr in
+  let elseComs = translate_prog elseExpr in
+  list_append ifComs [IfElse(thenComs, elseComs)]
+
+and translate_trace (traceExpr: expr) =
+  let traceComs = translate_prog traceExpr in
+  list_append traceComs [Trace]
+;;
+
+let rec compile_prog(progAst: com list): string =
+  match progAst with
+  | Push cnst :: rest -> "Push "^(const_to_string cnst)^";"^compile_prog rest
+  | Pop :: rest -> "Pop;"^compile_prog rest
+  | Swap :: rest -> "Swap;"^compile_prog rest
+  | Trace :: rest -> "Trace;"^compile_prog rest
+  | Add :: rest -> "Add;"^compile_prog rest
+  | Sub :: rest -> "Sub;"^compile_prog rest
+  | Mul :: rest -> "Mul;"^compile_prog rest
+  | Div :: rest -> "Div;"^compile_prog rest
+  | And :: rest -> "And;"^compile_prog rest
+  | Or  :: rest -> "Or;" ^compile_prog rest
+  | Not :: rest -> "Not;"^compile_prog rest
+  | Lt  :: rest -> "Lt;" ^compile_prog rest
+  | Gt  :: rest -> "Gt;" ^compile_prog rest
+  | IfElse(coms1, coms2) :: rest -> 
+    "If "^compile_prog coms1^
+    "Else "^compile_prog coms2^"End;"^
+    compile_prog rest
+  | Bind :: rest -> "Bind;"^compile_prog rest
+  | Lookup :: rest -> "Lookup;"^compile_prog rest
+  | Fun func :: rest -> 
+    "Fun "^compile_prog func^"End;"^compile_prog rest
+  | Call :: rest -> "Call;"^compile_prog rest
+  | Return :: rest -> "Return;"^compile_prog rest
+  | [] -> ""
+
+let compile (s : string) : string =
+  parse_prog s
+  |> translate_prog 
+  |> compile_prog
+
+let compile_and_run (s: string): t_trace option =
+  compile s |> interp
