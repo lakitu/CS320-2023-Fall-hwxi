@@ -1440,8 +1440,11 @@ and translate_var (str: string): coms =
   [Push (Sym str); Lookup];
 
 and translate_fun (name: string)(argName: string)(funBody: expr) =
-  let funBody = translate_prog funBody
-  |> list_append [Push (Sym argName); Bind] in
+  let funBody = list_concat [
+    [Push (Sym argName); Bind];
+    translate_prog funBody;
+    [Swap; Return]
+  ] in
   [Push (Sym name); Fun funBody]
 
 and translate_app (name: expr)(arg: expr) =
@@ -1457,7 +1460,7 @@ and translate_let (name: string)(varVal: expr)(inVal: expr) =
 and translate_seq (expr1: expr)(expr2: expr) =
   let coms1 = translate_prog expr1 in
   let coms2 = translate_prog expr2 in
-  list_append coms2 coms1
+  list_append coms1 coms2
 
 and translate_ifte (ifExpr: expr)(thenExpr: expr)(elseExpr: expr) =
   let ifComs   = translate_prog ifExpr in
@@ -1467,7 +1470,7 @@ and translate_ifte (ifExpr: expr)(thenExpr: expr)(elseExpr: expr) =
 
 and translate_trace (traceExpr: expr) =
   let traceComs = translate_prog traceExpr in
-  list_append traceComs [Trace]
+  list_append traceComs [Trace; Pop]
 ;;
 
 let rec compile_prog(progAst: com list): string =
@@ -1504,3 +1507,7 @@ let compile (s : string) : string =
 
 let compile_and_run (s: string): t_trace option =
   compile s |> interp
+;;
+print_endline (
+  compile "let fibo x = let rec loop i a b = trace a; if i < x then loop (i+1) b (a+b) else a in loop 0 0 1 in trace (fibo 10)"
+)
