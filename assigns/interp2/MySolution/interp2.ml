@@ -782,7 +782,7 @@ and com = Push of const | Pop | Swap
          | IfElse of coms * coms
          | Bind | Lookup | Fun of coms
          | Call | Return
-and coms = Coms of com list
+and coms = com list
 and prog = coms
 ;;
 
@@ -846,7 +846,7 @@ let rec com_parser(): com parser =
       let* coms2 = many (com_parser()) in 
       let* _ = whitespaces in
       let* _ = keyword "End;" in 
-      pure(IfElse(Coms coms1, Coms coms2))  ) <|>
+      pure(IfElse(coms1, coms2))  ) <|>
    (let* _ = keyword "Bind;" in pure(Bind)) <|>
    (let* _ = keyword "Lookup;" in pure(Lookup)) <|>
    (  let* _ = literal "Fun" in
@@ -854,7 +854,7 @@ let rec com_parser(): com parser =
       let* func = many (com_parser()) in
       let* _ = whitespaces in
       let* _ = keyword "End;" in
-      pure(Fun (Coms func))  ) <|>
+      pure(Fun func)  ) <|>
    (let* _ = keyword "Call;" in pure(Call)) <|>
    (let* _ = keyword "Return;" in pure(Return)) <|>
    fail
@@ -998,7 +998,7 @@ and interpret_ifelse (ifTrue: coms)(ifFalse: coms)
 and interpret_coms(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
    let rec loop(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): com_var_interpreter =
       match cmds with
-      | Coms(cmd :: cmds) -> (
+      | cmd :: cmds -> (
          let com_interp = 
             match cmd with
             | Push(cnst) -> interpret_push(cnst)
@@ -1022,7 +1022,7 @@ and interpret_coms(cmds: coms)(stack: t_stack)(trace: t_trace)(vars: t_vars): co
             | Return -> interpret_return
          in match com_interp stack trace vars with
          | (stack, "Panic" :: trace, vars) -> (stack, "Panic" :: trace, vars)
-         | (stack, trace, vars) -> loop(Coms cmds)(stack)(trace)(vars)  )
+         | (stack, trace, vars) -> loop(cmds)(stack)(trace)(vars)  )
       | _ -> (stack, trace, vars)
       in loop(cmds)(stack)(trace)(vars)
    ;;
@@ -1037,7 +1037,7 @@ let interp (s : string) : t_trace option =
    match string_parse(prog_parser()) s with
    | Some(pgm, remains) -> (
       match trim remains with
-      | [] -> Some (interpret_program (Coms pgm))
+      | [] -> Some (interpret_program pgm)
       | _ -> None  )
    | _ -> None
 ;;
