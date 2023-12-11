@@ -1407,8 +1407,8 @@ and translate_bopr(opr: bopr)(expr1: expr)(expr2: expr): coms =
   | Sub -> list_concat [stackComs2; stackComs1; [Sub]]
   | Mul -> list_concat [stackComs2; stackComs1; [Mul]]
   | Div -> list_concat [stackComs2; stackComs1; [Div]]
-  | Mod -> list_concat [stackComs2; [Push(Sym "e1"); Bind;];
-                stackComs1; [Push(Sym "e2"); Bind;
+  | Mod -> list_concat [stackComs2; [Push(Sym "e2"); Bind;];
+                stackComs1; [Push(Sym "e1"); Bind;
                 Push(Sym "e2"); Lookup;
                 Push(Sym "e1"); Lookup;
                 Div; Push(Sym "e2"); Lookup; Mul;
@@ -1450,7 +1450,7 @@ and translate_fun (name: string)(argName: string)(funBody: expr) =
 and translate_app (name: expr)(arg: expr) =
   let transName = translate_prog name in
   let transArg  = translate_prog arg  in
-  list_concat [transArg; transName; [Call]]
+  list_concat [transName; transArg; [Swap; Call]]
 
 and translate_let (name: string)(varVal: expr)(inVal: expr) =
   let varComs = translate_prog varVal in
@@ -1460,7 +1460,7 @@ and translate_let (name: string)(varVal: expr)(inVal: expr) =
 and translate_seq (expr1: expr)(expr2: expr) =
   let coms1 = translate_prog expr1 in
   let coms2 = translate_prog expr2 in
-  list_append coms1 coms2
+  list_concat [coms1; [Pop]; coms2]
 
 and translate_ifte (ifExpr: expr)(thenExpr: expr)(elseExpr: expr) =
   let ifComs   = translate_prog ifExpr in
@@ -1470,7 +1470,7 @@ and translate_ifte (ifExpr: expr)(thenExpr: expr)(elseExpr: expr) =
 
 and translate_trace (traceExpr: expr) =
   let traceComs = translate_prog traceExpr in
-  list_append traceComs [Trace; Pop]
+  list_append traceComs [Trace]
 ;;
 
 let rec compile_prog(progAst: com list): string =
@@ -1509,5 +1509,24 @@ let compile_and_run (s: string): t_trace option =
   compile s |> interp
 ;;
 print_endline (
-  compile "let fibo x = let rec loop i a b = trace a; if i < x then loop (i+1) b (a+b) else a in loop 0 0 1 in trace (fibo 10)"
+  compile "let rec pi n =
+let q = 1 in
+let r = 180 in
+let t = 60 in
+let j = 2 in
+let rec loop n q r t j =
+if n > 0 then
+let u = 3 * (3 * j + 1) * (3 * j + 2) in
+let y = (q * (27 * j - 12) + 5 * r) / (5 * t) in
+trace y;
+let q' = 10 * q * j * (2 * j - 1) in
+let r' = 10 * u * (q * (5 * j - 2) + r - y * t) in
+let t' = t * u in
+let j' = j + 1 in
+loop (n - 1) q' r' t' j'
+else ()
+in
+loop n q r t j
+in
+pi 6"
 )
